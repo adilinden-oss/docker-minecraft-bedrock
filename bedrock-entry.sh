@@ -338,8 +338,57 @@ sed -n "/^[-a-z]*=/ s/^/  /p" "${BEDROCK_DATA}/server.properties"
 
 # Starting the Minecraft Bedrock server
 echo "Starting Minecraft Bedrock server..."
+
+# Setup signal handling and cleanup
+BEDROCK_IN=/tmp/bedrock-input-fifo
+
+function _cleanup {
+    # Cleaning up symlinks (so bind volumes look "pretty")
+    echo "Removing executables and libraries symlinks..."
+    files="bedrock_server bedrock_server_realms.debug libCrypto.so"
+    for f in $files; do
+        if [ -f "${BEDROCK_DATA}/${f}" ] || [ -L "${BEDROCK_DATA}/${f}" ]; then
+            echo "  unlinking '${f}'"
+            unlink "${BEDROCK_DATA}/${f}"
+        fi
+    done
+}
+
+function _sig_handler {
+    echo "Death has been signalled, shutting down server...!"
+    echo -e "stop\n" > "${BEDROCK_IN}"
+    while grep ^bedrock_server /proc/*/cmdline > /dev/null 2>&1; do
+        sleep 1
+    done
+    # Cleanup before we exit
+    _cleanup
+    exit 0
+}
+
+if ! [ -e "${BEDROCK_IN}" ]; then
+    mkfifo "${BEDROCK_IN}"
+fi
+
+# Set SIGINT handler
+trap _sig_handler SIGINT
+
+# Set SIGTERM handler
+trap _sig_handler SIGTERM
+
+# Set SIGKILL handler
+trap _sig_handler SIGKILL
+
 cd "${BEDROCK_DATA}"
 export LD_LIBRARY_PATH=.
-exec ./bedrock_server
+tail -f "${BEDROCK_IN}" | ./bedrock_server &
+
+BEDROCK_PID=$!
+while read line; do
+    echo "$line" > "${BEDROCK_IN}"
+done < /dev/stdin &
+wait "${BEDROCK_PID}"
+
+# Cleanup before we exit
+_cleanup
 
 # End
