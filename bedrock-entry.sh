@@ -1,5 +1,22 @@
 #!/bin/bash
 
+# See how we were called. The Dockerfiles defaults to running the bedrock
+# server.
+# 
+# ENTRYPOINT ["/bedrock-entry.sh"]
+# CMD ["start_bedrock"]
+case "$1" in
+    start_bedrock)
+        :
+        ;;
+    '')
+        exec "/bin/bash"
+        ;;
+    *)
+        exec "$@"
+        ;;
+esac
+
 # This script relies on a few environment variables to create the runtime
 # environment for our Minecraft Bedrock Server:
 #
@@ -60,7 +77,7 @@ done
 # SERVER_NAME                     server-name                     Dedicated Server Any string
 # MAX_PLAYERS                     max-players                     10               INT 
 # SERVER_PORT                     server-port                     19132            INT
-# LEVEL_NAME                      level-name                      level            Any string
+# LEVEL_NAME                      level-name                      Bedrock level    Any string
 # LEVEL_SEED                      level-seed                      empty            Any string  
 # ONLINE_MODE                     online-mode                     true             true, false
 # WHITE_LIST                      white-list                      false            true, false
@@ -315,8 +332,14 @@ if [ ! -z ${TEXTUREPACK_REQUIRED+x} ]; then # only proceed if var is set
     esac
 fi
 
+# Dump settings
+echo "Active configuration per 'server.properties'..."
+sed -n "/^[-a-z]*=/ s/^/  /p" "${BEDROCK_DATA}/server.properties"
 
+# Starting the Minecraft Bedrock server
+echo "Starting Minecraft Bedrock server..."
+cd "${BEDROCK_DATA}"
+export LD_LIBRARY_PATH=.
+exec ./bedrock_server
 
-
-
-
+# End
