@@ -1,0 +1,141 @@
+# docker-compose.yml
+#
+# Compose file to start a fleet of Minecraft Bedrock servers.
+
+# Using version 2 as version 3 does not support the additional macvlan
+# options.
+version: '2.4'
+
+# Common settings for all containers
+x-bedrock:
+  &default-bedrock
+  build:
+    context: '.'
+  restart: unless-stopped
+  stdin_open: true
+  tty: true
+
+# Network definition with macvlan driver. Create a .env file with network
+# appropriate settings.
+#
+# BEDROCK_NIC=eth0
+# BEDROCK_IPPREFIX=10.10.0
+#
+networks:
+  bedrock-net:
+    driver: macvlan
+    driver_opts:
+      parent: ${BEDROCK_NIC:-eth0}
+    ipam:
+      config:
+        - subnet: ${BEDROCK_IPPREFIX:-192.168.0}.0/24
+          gateway: ${BEDROCK_IPPREFIX:-192.168.0}.1
+          ip_range: ${BEDROCK_IPPREFIX:-192.168.0}.80/29
+          aux_addresses:
+            the-host: ${BEDROCK_IPPREFIX:-192.168.0}.80
+
+# Need to add each volume here 
+volumes:
+  bedrock1:
+  bedrock2:
+  bedrock3:
+  bedrock4:
+
+# Define each server instance here. The following env variables are supported:
+#
+# Environment variable            server.properties               Default          Allowed values
+# --------------------            -----------------               -------          --------------
+# GAMEMODE                        gamemode                        survival         survival (0), creative (1), adventure (2)
+# DIFFICULTY                      difficulty                      easy             peaceful (0), easy (1), normal (2), hard (3)
+# LEVEL_TYPE                      level-type                      DEFAULT          FLAT, LEGACY, DEFAULT 
+# SERVER_NAME                     server-name                     Dedicated Server Any string
+# MAX_PLAYERS                     max-players                     10               INT 
+# SERVER_PORT                     server-port                     19132            INT
+# LEVEL_NAME                      level-name                      Bedrock level    Any string
+# LEVEL_SEED                      level-seed                      empty            Any string  
+# ONLINE_MODE                     online-mode                     true             true, false
+# WHITE_LIST                      white-list                      false            true, false
+# ALLOW_CHEATS                    allow-cheats                    false            true, false
+# VIEW_DISTANCE                   view-distance                   32               INT
+# PLAYER_IDLE_TIMEOUT             player-idle-timeout             30               INT
+# MAX_THREADS                     max-threads                     8                INT
+# TICK_DISTANCE                   tick-distance                   4                INT [4-12]
+# DEFAULT_PLAYER_PERMISSION_LEVEL default-player-permission-level member           visitor, member, operator
+# TEXTUREPACK_REQUIRED            texturepack-required            false            true, false
+#
+# Volumes:
+#
+# Within the service define a bind mount as follows. But be sure to create the
+# source directory as Compose will not create non existant source directories.
+#
+# services:
+#   bedrock1:
+#    volumes:
+#       - type: bind
+#         source: ./data/bedrock1
+#         target: /data
+#
+# Or define a docker volume at the root level and refer to it in the service.
+#
+# volumes:
+#   bedrock1:
+# 
+# services:
+#   bedrock1:
+#    volumes:
+#       - type: bind
+#         source: ./data/bedrock1
+#         target: /data
+#
+
+services:
+
+  bedrock1:
+    << : *default-bedrock
+    networks:
+      bedrock-net:
+    volumes:
+      - bedrock1:/data
+    environment:
+      SERVER_NAME: 'Multiple Villages - Creative'
+      GAMEMODE: 1
+      ONLINE_MODE: 0
+      LEVEL_SEED: '1388582293'
+
+  bedrock2:
+    << : *default-bedrock
+    networks:
+      bedrock-net:
+    volumes:
+      - bedrock2:/data
+    environment:
+      SERVER_NAME: 'The Deep Ravine - Creative'
+      GAMEMODE: 1
+      ONLINE_MODE: 0
+      LEVEL_SEED: '2065486297'
+
+  bedrock3:
+    << : *default-bedrock
+    networks:
+      bedrock-net:
+    volumes:
+      - bedrock3:/data
+    environment:
+      SERVER_NAME: 'Epic Jungle - Creative'
+      GAMEMODE: 1
+      ONLINE_MODE: 0
+      LEVEL_SEED: '-730362160'
+
+  bedrock4:
+    << : *default-bedrock
+    networks:
+      bedrock-net:
+    volumes:
+      - bedrock4:/data
+    environment:
+      SERVER_NAME: 'Nearby Mansion - Creative'
+      GAMEMODE: 1
+      ONLINE_MODE: 0
+      LEVEL_SEED: '-396676922'
+
+# The end of the world

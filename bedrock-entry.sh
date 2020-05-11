@@ -226,10 +226,10 @@ fi
 # ONLINE_MODE
 if [ ! -z ${ONLINE_MODE+x} ]; then # only proceed if var is set
     case $(trim-var "${ONLINE_MODE}") in
-        true)
+        true|1)
             properties-replace online-mode true
             ;;
-        false)
+        false|0)
             properties-replace online-mode false
             ;;
         *)
@@ -240,10 +240,10 @@ fi
 # WHITE_LIST
 if [ ! -z ${WHITE_LIST+x} ]; then # only proceed if var is set
     case $(trim-var "${WHITE_LIST}") in
-        true)
+        true|1)
             properties-replace white-list true
             ;;
-        false)
+        false|0)
             properties-replace white-list false
             ;;
         *)
@@ -254,10 +254,10 @@ fi
 # ALLOW_CHEATS
 if [ ! -z ${ALLOW_CHEATS+x} ]; then # only proceed if var is set
     case $(trim-var "${ALLOW_CHEATS}") in
-        true)
+        true|1)
             properties-replace allow-cheats true
             ;;
-        false)
+        false|0)
             properties-replace allow-cheats false
             ;;
         *)
@@ -321,10 +321,10 @@ fi
 # TEXTUREPACK_REQUIRED
 if [ ! -z ${TEXTUREPACK_REQUIRED+x} ]; then # only proceed if var is set
     case $(trim-var "${TEXTUREPACK_REQUIRED}") in
-        true)
+        true|1)
             properties-replace texturepack-required true
             ;;
-        false)
+        false|0)
             properties-replace texturepack-required false
             ;;
         *)
