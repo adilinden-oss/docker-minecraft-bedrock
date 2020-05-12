@@ -40,6 +40,7 @@ volumes:
   bedrock2:
   bedrock3:
   bedrock4:
+  bedrock5:
 
 # Define each server instance here. The following env variables are supported:
 #
@@ -138,4 +139,17 @@ services:
       ONLINE_MODE: 0
       LEVEL_SEED: '-396676922'
 
-# The end of the world
+  bedrock5:
+    << : *default-bedrock
+    networks:
+      bedrock-net:
+    volumes:
+      - bedrock5:/data
+    environment:
+      SERVER_NAME: 'Land Sea Mountains'
+      GAMEMODE: 1
+      ONLINE_MODE: 0
+      LEVEL_SEED: '-1992876879'
+
+
+# Bedrock! You reached the end of the workd!
